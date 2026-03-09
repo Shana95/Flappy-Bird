@@ -14,6 +14,35 @@ A Python implementation of the classic Flappy Bird game built with the Pygame li
 
 ## 🛠️ Installation
 
+To run this project locally on your machine, follow these steps:
+
+1. **Clone the repository:**
+Open your terminal and run the following command to download the project:
+
+    ```sh
+    git clone https://github.com/Fabulousqueen/Flappy-Bird.git
+    ```
+
+2. **Navigate to the project directory:**
+
+    ```sh
+    cd Flappy-Bird
+    ```
+
+3. **Install dependencies:**
+    This project requires Pygame. You can install it using pip:
+
+    ```sh
+    pip install pygame
+    ```
+
+4. **Launch the game:**
+    Run the main script to start playing:
+
+    ```sh
+    python main.py
+    ```
+
 ## 👾 How to play?
 
 1. **Jump:** Press the `SPACE` bar or `Left Click` the mouse to flap your wings and defy gravity;
