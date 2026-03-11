@@ -1,4 +1,5 @@
 """Main execution script for the Flappy Bird game loop."""
+
 import sys
 
 import pygame
@@ -6,12 +7,12 @@ import pygame
 from background import Ground, Sky
 
 
-def main():
+def main() -> None:
     """Initialize the game engine and manage the real-time event loop."""
     screen_width = 1024
     screen_height = 768
 
-    pygame.init()
+    pygame.init()  # pylint: disable=no-member
     screen = pygame.display.set_mode((screen_width, screen_height))
     pygame.display.set_caption("Flappy Bird")
     clock = pygame.time.Clock()
@@ -26,8 +27,8 @@ def main():
 
     while True:
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
+            if event.type == pygame.QUIT:  # pylint: disable=no-member
+                pygame.quit()  # pylint: disable=no-member
                 sys.exit()
 
         sky.draw()
@@ -37,4 +38,5 @@ def main():
         clock.tick(fps)
 
 
-main()
+if __name__ == "__main__":
+    main()
