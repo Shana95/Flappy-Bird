@@ -6,7 +6,9 @@ import pygame
 class Background:
     """Base class for all background objects in the game."""
 
-    def __init__(self, filename, pos_x, pos_y, screen):
+    def __init__(
+        self, filename: str, pos_x: int, pos_y: int, screen: pygame.Surface
+    ):
         """Initialize background with image, position, and screen reference."""
         self.screen = screen
         self.surface = pygame.image.load(f"../assets/Game Objects/{filename}")
@@ -15,23 +17,23 @@ class Background:
         self.pos_x = pos_x
         self.pos_y = pos_y
 
-    def get_width(self):
+    def get_width(self) -> int:
         """Return the width of the background surface."""
         return self.width
 
-    def get_height(self):
+    def get_height(self) -> int:
         """Return the height of the background surface."""
         return self.height
 
-    def get_pos_x(self):
+    def get_pos_x(self) -> int:
         """Return the current X position."""
         return self.pos_x
 
-    def get_pos_y(self):
+    def get_pos_y(self) -> int:
         """Return the current Y position."""
         return self.pos_y
 
-    def draw(self):
+    def draw(self) -> None:
         """Abstract method to draw the object on the screen."""
 
 
@@ -46,22 +48,24 @@ class Sky(Background):
 class Ground(Background):
     """Class representing the scrolling ground with movement logic."""
 
-    def __init__(self, filename, pos_x, sky_height, screen):
+    def __init__(
+        self, filename: str, pos_x: int, sky_height: int, screen: pygame.Surface
+    ):
         """Initialize the ground and calculate its vertical position."""
         super().__init__(filename, pos_x, 0, screen)
         self.pos_y = sky_height - self.get_height()
 
-    def draw(self):
+    def draw(self) -> None:
         """Blit the ground surface onto the screen."""
         self.screen.blit(self.surface, (self.pos_x, self.pos_y))
 
-    def move(self, velocity):
+    def move(self, velocity: int) -> None:
         """Update the X position to create a scrolling effect."""
         self.pos_x -= velocity
         if abs(self.pos_x) > (self.width / 7):
             self.pos_x = 0
 
-    def update(self, velocity):
+    def update(self, velocity: int) -> None:
         """Draw the ground and move it according to game velocity."""
         self.draw()
         self.move(velocity)
