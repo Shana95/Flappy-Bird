@@ -44,8 +44,10 @@ def main() -> None:
                 bird.enable_fly()
                 bird.jump()
 
+        bird_state = bird.get_state()
+
         sky.draw()
-        ground.update(velocity)
+        ground.update(velocity, bird_state)
         bird_group.draw(screen)
         bird.update(ground.get_pos_y())
 

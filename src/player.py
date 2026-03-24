@@ -3,6 +3,8 @@
 
 import pygame
 
+import states
+
 
 class Bird(pygame.sprite.Sprite):
     """
@@ -28,6 +30,16 @@ class Bird(pygame.sprite.Sprite):
         self.gravity = 0.0
         self.fly = False
         self.died = False
+
+    def get_state(self) -> states.States:
+        """Returns the current states.States member based on bird physics."""
+        if not self.fly and not self.died:
+            return states.States.READY
+        if not self.fly and self.died:
+            return states.States.GROUNDED
+        if self.fly and not self.died:
+            return states.States.FLYING
+        return states.States.FALLING
 
     def enable_fly(self) -> None:
         """Enable gravity and physics for the bird."""

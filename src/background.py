@@ -2,6 +2,8 @@
 
 import pygame
 
+import states
+
 
 class Background:
     """Base class for all background objects in the game."""
@@ -63,7 +65,13 @@ class Ground(Background):
         if abs(self.pos_x) > (self.width / 7):
             self.pos_x = 0
 
-    def update(self, velocity: int) -> None:
-        """Draw the ground and move it according to game velocity."""
+    def update(self, velocity: int, bird_state: states.States) -> None:
+        """
+        Draws the ground and updates its position based on the bird's state.
+
+        The ground only scrolls if the bird is in an active state (e.g., READY or FLYING),
+        preventing background movement after a collision.
+        """
         self.draw()
-        self.move(velocity)
+        if bird_state == states.States.FLYING:
+            self.move(velocity)
