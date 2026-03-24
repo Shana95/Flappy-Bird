@@ -16,9 +16,7 @@ def main() -> None:
     screen_height = 512
 
     pygame.init()
-    screen = pygame.display.set_mode(
-        (screen_width * scale, screen_height * scale)
-    )
+    screen = pygame.display.set_mode((screen_width * scale, screen_height * scale))
     pygame.display.set_caption("Flappy Bird")
     clock = pygame.time.Clock()
     fps = 60

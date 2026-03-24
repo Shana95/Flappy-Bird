@@ -25,7 +25,7 @@ class Bird(pygame.sprite.Sprite):
             self.images.append(image)
 
         self.image_index = 0.0
-        
+
         self.original_image = self.images[int(self.image_index)]
         self.image = self.images[int(self.image_index)]
         self.rect = self.image.get_rect(midbottom=(pos_x, pos_y))
@@ -33,6 +33,7 @@ class Bird(pygame.sprite.Sprite):
         self.gravity = 0.0
         self.fly = False
         self.died = False
+        self.mask = pygame.mask.from_surface(self.image)
 
     def get_state(self) -> states.States:
         """Returns the current states.States member based on bird physics."""
@@ -73,9 +74,7 @@ class Bird(pygame.sprite.Sprite):
 
     def jump(self) -> None:
         """Apply an upward impulse to the bird's gravity."""
-        self.gravity = (
-            -10
-        )  
+        self.gravity = -10
 
     def apply_gravity(self) -> None:
         """Update gravity value and apply it to the bird's vertical position."""
@@ -103,13 +102,9 @@ class Bird(pygame.sprite.Sprite):
         ground_line indicates the Current Y position of the ground.
         """
         if self.died:
-            return  
-        self._animate()  
+            return
+        self._animate()
         if self.fly:
-            self._apply_physics() 
-            self._rotate() 
-            self.touched_ground(
-                ground_line
-            )
-
-            self.mask = pygame.mask.from_surface(self.image)
+            self._apply_physics()
+            self._rotate()
+            self.touched_ground(ground_line)
