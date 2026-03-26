@@ -1,8 +1,10 @@
 """Module for managing pipe obstacles in the game"""
+
 # pylint: disable=no-member
 # pylint: disable=too-many-locals
 
 import pygame
+
 import states
 
 

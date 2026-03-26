@@ -4,8 +4,8 @@
 # pylint: disable=too-many-locals
 
 import random
-from pipes import Pipe
 import sys
+from pipes import Pipe
 
 import pygame
 
@@ -56,7 +56,7 @@ def main() -> None:
     SPAWNPIPE = pygame.USEREVENT
     # Set a timer to trigger the SPAWNPIPE event
     pygame.time.set_timer(SPAWNPIPE, 2750)
-    
+
     game_loop = True
 
     while game_loop:
@@ -74,9 +74,9 @@ def main() -> None:
                 # Create the pipes
                 bottom_pipe = Pipe(original_width + 50, random_y, 0, random_gap)
                 top_pipe = Pipe(original_width + 50, random_y, 1, random_gap)
-                
+
                 pipe_group.add(bottom_pipe, top_pipe)
-                
+
             if (event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE) or (
                 event.type == pygame.MOUSEBUTTONDOWN and event.button == 1
             ):
