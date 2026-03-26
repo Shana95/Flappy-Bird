@@ -64,14 +64,6 @@ class Bird(pygame.sprite.Sprite):
             self.die()
             self.disable_fly()
 
-    def animation(self) -> None:
-        """Cycle through animation frames based on image_index increment."""
-        self.image_index += 0.12
-        if int(self.image_index) >= len(self.images):
-            self.image_index = 0
-
-        self.image = self.images[int(self.image_index)]
-
     def jump(self) -> None:
         """Apply an upward impulse to the bird's gravity."""
         self.gravity = -10
