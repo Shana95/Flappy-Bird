@@ -3,6 +3,8 @@
 
 # pylint: disable=too-many-locals
 
+import random
+from pipes import Pipe
 import sys
 
 import pygame
@@ -41,13 +43,20 @@ def main() -> None:
     filename_sky = "background-day.png"
     filename_ground = "base.png"
 
+    # the more the offset the more the ground goes down
+    ground_offset = 560
     sky = Sky(filename_sky, 0, 0, canvas)
-    ground = Ground(filename_ground, 0, sky.get_height(), canvas)
+    ground = Ground(filename_ground, 0, ground_offset, canvas)
 
     bird_group: pygame.sprite.GroupSingle = pygame.sprite.GroupSingle()
     bird = player.Bird(90, 220)
     bird_group.add(bird)
 
+    pipe_group = pygame.sprite.Group()
+    SPAWNPIPE = pygame.USEREVENT
+    # Set a timer to trigger the SPAWNPIPE event
+    pygame.time.set_timer(SPAWNPIPE, 2750)
+    
     game_loop = True
 
     while game_loop:
@@ -56,6 +65,18 @@ def main() -> None:
                 pygame.quit()
                 sys.exit()
 
+            if event.type == SPAWNPIPE and bird.fly and not bird.died:
+                # Generate random vertical position and gap size for the new pipes
+                random_y = random.randint(150, 350)
+                # randomize the gap
+                random_gap = random.randint(100, 130)
+
+                # Create the pipes
+                bottom_pipe = Pipe(original_width + 50, random_y, 0, random_gap)
+                top_pipe = Pipe(original_width + 50, random_y, 1, random_gap)
+                
+                pipe_group.add(bottom_pipe, top_pipe)
+                
             if (event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE) or (
                 event.type == pygame.MOUSEBUTTONDOWN and event.button == 1
             ):
@@ -66,6 +87,8 @@ def main() -> None:
 
         # Draw the game elements on the canvas
         sky.draw()
+        pipe_group.draw(canvas)
+        pipe_group.update(velocity, bird_state)
         ground.update(velocity, bird_state)
         bird_group.draw(canvas)
         bird.update(ground.get_pos_y())
