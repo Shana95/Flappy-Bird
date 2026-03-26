@@ -14,7 +14,7 @@ class Bird(pygame.sprite.Sprite):
     """
 
     def __init__(self, pos_x: int, pos_y: int) -> None:
-        """Initialize the bird with animations, position (pos_x, pos_y), and physics state."""
+        """Initialize the bird with animations"""
         super().__init__()
 
         self.images = []
@@ -57,12 +57,25 @@ class Bird(pygame.sprite.Sprite):
         """Trigger the bird's death state."""
         self.died = True
 
-    def touched_ground(self, ground_line: int):
+    def hit_ground(self, ground_line: int):
         """Check if the bird's vertical position exceeds the ground line."""
-        if self.rect.y >= ground_line:
-            self.rect.y = ground_line - self.rect.height
+        if self.rect.bottom >= ground_line:
+            self.rect.bottom = ground_line - self.rect.height
+            # Upon hitting the ground, reset gravity and trigger death state.
+            self.gravity = 0
+            # Rotate the bird to a vertical position to indicate it has hit the ground.
+            self.image = pygame.transform.rotate(self.original_image, -90)
+            self.rect = self.image.get_rect(center=self.rect.center)
+            # Ensure the bird's bottom is aligned with the ground line after rotation.
+            self.rect.bottom = ground_line
             self.die()
             self.disable_fly()
+
+    def hit_ceiling(self):
+        """Prevent the bird from flying above the sky (screen top)."""
+        if self.rect.top <= 0:
+            self.rect.top = 0
+            self.gravity = max(self.gravity, 0.0)
 
     def jump(self) -> None:
         """Apply an upward impulse to the bird's gravity."""
@@ -82,7 +95,12 @@ class Bird(pygame.sprite.Sprite):
 
     def _rotate(self) -> None:
         """Exclusively handles the bird's rotation based on its vertical velocity."""
-        self.image = pygame.transform.rotate(self.original_image, self.gravity * -3)
+        angle = self.gravity * -3
+        if angle <= -90:
+            angle = -90
+        elif angle >= 25:
+            angle = 25
+        self.image = pygame.transform.rotate(self.original_image, angle)
         self.rect = self.image.get_rect(center=self.rect.center)
 
     def _apply_physics(self) -> None:
@@ -101,4 +119,5 @@ class Bird(pygame.sprite.Sprite):
         if self.fly:
             self._apply_physics()
             self._rotate()
-            self.touched_ground(ground_line)
+            self.hit_ceiling()
+            self.hit_ground(ground_line)
