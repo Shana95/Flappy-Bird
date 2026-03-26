@@ -82,17 +82,17 @@ class Bird(pygame.sprite.Sprite):
         self.rect.y += int(self.gravity)
 
     def _animate(self) -> None:
-        """Gestisce esclusivamente il cambio dei frame (le ali che battono)."""
+        """Exclusively handles frame transitions for the wing-flapping animation."""
         self.image_index = (self.image_index + 0.12) % len(self.images)
         self.original_image = self.images[int(self.image_index)]
 
     def _rotate(self) -> None:
-        """Gestisce esclusivamente l'inclinazione dell'uccellino in base alla velocità."""
+        """Exclusively handles the bird's rotation based on its vertical velocity."""
         self.image = pygame.transform.rotate(self.original_image, self.gravity * -3)
         self.rect = self.image.get_rect(center=self.rect.center)
 
     def _apply_physics(self) -> None:
-        """Gestisce esclusivamente gravità e spostamento verticale."""
+        """Exclusively manages gravity and vertical movement."""
         self.gravity += 0.5
         self.rect.y += int(self.gravity)
 
