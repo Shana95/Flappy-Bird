@@ -1,5 +1,4 @@
 # pylint: disable=no-member
-# pylint: disable=too-few-public-methods
 """Module containing UI classes to manage game screens and animations."""
 
 import pygame
