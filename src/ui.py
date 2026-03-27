@@ -1,6 +1,5 @@
 # pylint: disable=no-member
 # pylint: disable=too-few-public-methods
-# pylint: disable=too-many-arguments
 """Module containing UI classes to manage game screens and animations."""
 
 import pygame
@@ -11,14 +10,7 @@ import states
 class UI:
     """Base class for all User Interface elements in the game."""
 
-    def __init__(
-        self,
-        imagepath: str,
-        pos_x: int,
-        pos_y: int,
-        transparency: int,
-        target_transparency: int,
-    ):
+    def __init__(self, imagepath: str, pos_x: int, pos_y: int, transparency: int):
         self.image = pygame.image.load(f"../assets/UI/{imagepath}")
         self.rect = self.image.get_rect(midbottom=(pos_x, pos_y))
         self.pos_x = pos_x
@@ -26,18 +18,7 @@ class UI:
 
         self.original_transparency = transparency
         self.transparency = self.original_transparency
-        self.target_transparency = target_transparency
         self.image.set_alpha(self.transparency)
-
-    def reset(self) -> None:
-        """Reset the UI transparency to its original value."""
-        self.transparency = self.original_transparency
-
-    def target_transparency_reached(
-        self,
-    ) -> bool:
-        """Check if the current transparency has reached the target value."""
-        return self.transparency == self.target_transparency
 
     def _animation(self):
         """Abstract method to handle animation logic"""
@@ -51,7 +32,7 @@ class StartScreen(UI):
 
     def _animation(self):
         """Decrease transparency to create a fade-out effect."""
-        if self.transparency > self.target_transparency:
+        if self.transparency > 0:
             self.transparency -= 5
             self.image.set_alpha(self.transparency)
 
@@ -76,7 +57,7 @@ class GameOverScreen(UI):
 
     def _animation(self):
         """Increase transparency to create a fade-in effect."""
-        if self.transparency < self.target_transparency:
+        if self.transparency < 255:
             self.transparency += 5
             self.image.set_alpha(self.transparency)
 
