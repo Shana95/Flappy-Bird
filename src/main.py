@@ -9,6 +9,7 @@ import sys
 import pygame
 
 import player
+import score
 from background import Ground, Sky
 from pipe import Pipe
 
@@ -73,6 +74,10 @@ def main() -> None:
     # Set a timer to trigger the SPAWNPIPE event
     pygame.time.set_timer(spawn_pipe_event, 2750)
 
+    actual_score = score.Score(
+        "flappyborder.ttf", "flappyfill.ttf", int(sky.get_width() / 2), 50
+    )
+
     game_loop = True
 
     while game_loop:
@@ -119,6 +124,11 @@ def main() -> None:
         bird_group.draw(canvas)
         bird.update(ground.get_pos_y())
 
+        for pipe in pipe_group:
+            if pipe.get_position() != 1 and pipe.check_passed(bird.rect.centerx):
+                actual_score.scored()
+
+        actual_score.draw(canvas)
         # Scale the canvas to fit the window
         scaled_canvas = pygame.transform.smoothscale(
             canvas, (window_width, window_height)

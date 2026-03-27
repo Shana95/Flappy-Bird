@@ -28,9 +28,9 @@ class Pipe(pygame.sprite.Sprite):
             )
 
         self.passed = False
-
+        self.position = position
         # chooses between a top or a bottom pipe
-        if position == 1:
+        if self.position == 1:
             self.image = Pipe.pipe_top_surface
             self.rect = self.image.get_rect(midbottom=(x, y - (gap // 2)))
         else:
@@ -38,6 +38,10 @@ class Pipe(pygame.sprite.Sprite):
             self.rect = self.image.get_rect(midtop=(x, y + (gap // 2)))
 
         self.mask = pygame.mask.from_surface(self.image)
+
+    def get_position(self):
+        """Return the pipe's position attribute"""
+        return self.position
 
     def _is_off_screen(self) -> bool:
         """Check if the pipe has completely moved off the left side of the screen."""
