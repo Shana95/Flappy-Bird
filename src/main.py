@@ -10,6 +10,7 @@ import pygame
 
 import player
 import score
+import ui
 from background import Ground, Sky
 from pipe import Pipe
 
@@ -59,6 +60,8 @@ def main() -> None:
 
     filename_sky = "background-day.png"
     filename_ground = "base.png"
+    filename_start = "message.png"
+    filename_gameover = "gameover.png"
 
     # the more the offset the more the ground goes down
     ground_offset = 560
@@ -76,6 +79,13 @@ def main() -> None:
 
     actual_score = score.Score(
         "flappyborder.ttf", "flappyfill.ttf", int(sky.get_width() / 2), 50
+    )
+
+    start_transparency = 255
+    gameover_transparency = 0
+    start_screen = ui.StartScreen(filename_start, 150, 305, start_transparency)
+    gameover_screen = ui.GameOverScreen(
+        filename_gameover, 150, 305, gameover_transparency
     )
 
     game_loop = True
@@ -121,8 +131,10 @@ def main() -> None:
         pipe_group.draw(canvas)
         pipe_group.update(velocity, bird_state)
         ground.update(velocity, bird_state)
+        start_screen.draw(bird_state, canvas)
         bird_group.draw(canvas)
         bird.update(ground.get_pos_y())
+        gameover_screen.draw(bird_state, canvas)
 
         for pipe in pipe_group:
             if pipe.get_position() != 1 and pipe.check_passed(bird.rect.centerx):
