@@ -23,7 +23,17 @@ def mock_pygame_essentials():
         
         # 1. Setup mock surface with concrete return values to satisfy internal physics math
         mock_surface = MagicMock(spec=pygame.Surface)
-        mock_surface.get_rect.return_value = pygame.Rect(0, 0, 50, 50)
+        
+        # Dynamic Rect positioning to allow physics updates and maintain position during rotations
+        def dynamic_get_rect(**kwargs):
+            # Se viene passato un centro o una posizione, crea il rect lì
+            if 'midbottom' in kwargs: return pygame.Rect(kwargs['midbottom'][0], kwargs['midbottom'][1], 50, 50)
+            if 'midtop' in kwargs: return pygame.Rect(kwargs['midtop'][0], kwargs['midtop'][1], 50, 50)
+            if 'center' in kwargs: return pygame.Rect(kwargs['center'][0]-25, kwargs['center'][1]-25, 50, 50)
+            # Default
+            return pygame.Rect(0, 0, 50, 50)
+
+        mock_surface.get_rect.side_effect = dynamic_get_rect
         mock_surface.get_width.return_value = 100
         mock_surface.get_height.return_value = 100
         
@@ -98,3 +108,49 @@ def test_ground_scrolling():
     velocity = 10
     ground.update(velocity, States.FLYING)
     assert ground.pos_x == initial_x - velocity
+
+@pytest.mark.parametrize("y_pos, expected_death", [
+    (100, False), # Volo normale
+    (560, True),  # Collisione con il terreno
+])
+def test_bird_ground_collision(y_pos, expected_death):
+    """Parameterized test covering ground collision scenarios."""
+    bird = player.Bird(100, y_pos)
+    bird.rect.bottom = y_pos
+    bird.hit_ground(500)
+    assert bird.died is expected_death
+
+def test_bird_applies_physics_when_flying():
+    """Ensures gravity affects the bird only when the state is FLYING."""
+    bird = player.Bird(100, 200)
+    bird.enable_fly()
+    initial_y = bird.rect.y
+    # Chiamiamo update due volte per accumulare gravità a sufficienza (> 1.0)
+    bird.update(500)
+    bird.update(500)
+    # Verifichiamo che la posizione Y sia cambiata rispetto all'originale
+    assert bird.rect.y != initial_y
+
+def test_bird_no_physics_when_not_flying():
+    """Ensures the bird remains static when the game is not active."""
+    bird = player.Bird(100, 200)
+    initial_y = bird.rect.y
+    bird.update(500)
+    assert bird.rect.y == initial_y
+
+def test_bird_hits_ceiling():
+    """Validates ceiling collision constraints preventing out-of-bounds flight."""
+    bird = player.Bird(100, 50)
+    bird.enable_fly()
+    bird.rect.top = -10
+    bird.update(500)
+    assert bird.rect.top == 0
+
+def test_bird_hits_ground_and_dies():
+    """Ensures fatal state is triggered upon forced ground intersection."""
+    bird = player.Bird(100, 600)
+    bird.enable_fly()
+    bird.rect.bottom = 600
+    bird.update(500)
+    assert bird.died is True
+    assert bird.fly is False
