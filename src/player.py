@@ -61,15 +61,13 @@ class Bird(pygame.sprite.Sprite):
 
     def hit_ground(self, ground_line: int):
         """Check if the bird's vertical position exceeds the ground line."""
-        if self.rect.bottom >= ground_line:
-            self.rect.bottom = ground_line - self.rect.height
-            # Upon hitting the ground, reset gravity and trigger death state.
+        visible_bottom = self.image.get_bounding_rect().bottom
+        empty_space = self.image.get_height() - visible_bottom
+        
+        if self.rect.bottom - empty_space >= ground_line:
+            self.rect.bottom = ground_line + empty_space
+            # Upon hitting the ground, reset gravity.
             self.gravity = 0
-            # Rotate the bird to a vertical position to indicate it has hit the ground.
-            # self.image = pygame.transform.rotate(self.original_image, -90)
-            self.rect = self.image.get_rect(center=self.rect.center)
-            # Ensure the bird's bottom is aligned with the ground line after rotation.
-            self.rect.bottom = ground_line
 
             if not self.died:
                 self.die()
@@ -129,8 +127,15 @@ class Bird(pygame.sprite.Sprite):
         if not self.died:
             # Only rotate the bird if it's still alive
             self._rotate()
-        else:
-            # If the bird has died, ensure it is rotated to a vertical position
-            self.image = pygame.transform.rotate(self.original_image, -90)
-            self.rect = self.image.get_rect(center=self.rect.center)
+        elif self.rect.bottom < ground_line:
+            if not self.is_rotated_to_death:
+                current_center = self.rect.center
+                self.image = pygame.transform.rotate(self.original_image, -90)
+                self.rect = self.image.get_rect(center=current_center)
+                self.is_rotated_to_death = True
+        elif not self.is_rotated_to_death and self.gravity == 0:
             self.is_rotated_to_death = True
+        # if self.gravity == 0 and self.died:
+        #     visible_bottom = self.image.get_bounding_rect().bottom
+        #     empty_space = self.image.get_height() - visible_bottom
+        #     self.rect.bottom = ground_line + empty_space
