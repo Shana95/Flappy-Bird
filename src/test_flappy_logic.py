@@ -185,3 +185,17 @@ def test_ground_resets_position():
     ground.pos_x = -701 
     ground.update(0, States.FLYING) 
     assert ground.pos_x == 0
+
+def test_bird_animation_loops():
+    """Checks if the sprite animation index loops correctly."""
+    bird = player.Bird(100, 200)
+    for _ in range(20):
+        bird._animate()
+    assert 0 <= bird.image_index < len(bird.images)
+
+def test_bird_rotation_executes():
+    """Validates that rotation logic applies transformations safely."""
+    bird = player.Bird(100, 200)
+    bird.gravity = 10
+    bird._rotate()
+    assert bird.rect is not None
