@@ -85,7 +85,9 @@ def main() -> None:
                     bird.jump()
 
         bird_state = bird.get_state()
-        if pygame.sprite.spritecollide(bird, pipe_group, False, pygame.sprite.collide_mask):
+        if pygame.sprite.spritecollide(
+            bird, pipe_group, False, pygame.sprite.collide_mask
+        ):
             bird.die()
 
         # Draw the game elements on the canvas

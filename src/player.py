@@ -66,14 +66,14 @@ class Bird(pygame.sprite.Sprite):
             # Upon hitting the ground, reset gravity and trigger death state.
             self.gravity = 0
             # Rotate the bird to a vertical position to indicate it has hit the ground.
-            #self.image = pygame.transform.rotate(self.original_image, -90)
+            # self.image = pygame.transform.rotate(self.original_image, -90)
             self.rect = self.image.get_rect(center=self.rect.center)
             # Ensure the bird's bottom is aligned with the ground line after rotation.
             self.rect.bottom = ground_line
-            
+
             if not self.died:
                 self.die()
-                
+
             self.disable_fly()
 
     def hit_ceiling(self):
@@ -120,12 +120,12 @@ class Bird(pygame.sprite.Sprite):
         """
         if not self.died:
             self._animate()
-            
+
         if self.fly or self.died:
             self._apply_physics()
             self.hit_ceiling()
             self.hit_ground(ground_line)
-        
+
         if not self.died:
             # Only rotate the bird if it's still alive
             self._rotate()
