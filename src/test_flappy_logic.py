@@ -6,45 +6,45 @@ import background
 import pipe
 import player
 from states import States
+import score
 
 # --- GLOBAL FIXTURES ---
 
 @pytest.fixture(autouse=True)
 def mock_pygame_essentials():
     """
-    Global fixture to mock Pygame's core functionalities.
-    Ensures tests run in complete isolation without requiring a display server
-    or physical asset loading, preventing I/O bottlenecks.
+    Global fixture to mock Pygame's core functionalities, including Fonts.
     """
     with patch("pygame.image.load") as mock_load, \
          patch("pygame.mask.from_surface") as mock_mask, \
          patch("pygame.transform.rotate") as mock_rotate, \
-         patch("pygame.transform.flip") as mock_flip:
+         patch("pygame.transform.flip") as mock_flip, \
+         patch("pygame.font.Font") as mock_font:
         
-        # 1. Setup mock surface with concrete return values to satisfy internal physics math
+        # Setup mock surface
         mock_surface = MagicMock(spec=pygame.Surface)
         
-        # Dynamic Rect positioning to allow physics updates and maintain position during rotations
         def dynamic_get_rect(**kwargs):
-            # Se viene passato un centro o una posizione, crea il rect lì
             if 'midbottom' in kwargs: return pygame.Rect(kwargs['midbottom'][0], kwargs['midbottom'][1], 50, 50)
             if 'midtop' in kwargs: return pygame.Rect(kwargs['midtop'][0], kwargs['midtop'][1], 50, 50)
             if 'center' in kwargs: return pygame.Rect(kwargs['center'][0]-25, kwargs['center'][1]-25, 50, 50)
-            # Default
             return pygame.Rect(0, 0, 50, 50)
 
         mock_surface.get_rect.side_effect = dynamic_get_rect
         mock_surface.get_width.return_value = 100
         mock_surface.get_height.return_value = 100
-        
-        # Define bounding box to simulate transparent pixel padding
         mock_surface.get_bounding_rect.return_value = pygame.Rect(0, 0, 50, 48)
         
-        # 2. Configure chained mock calls for sprite rendering pipeline
+        # Configurazione ritorni
         mock_load.return_value.convert_alpha.return_value = mock_surface
         mock_rotate.return_value = mock_surface
         mock_flip.return_value = mock_surface
         mock_mask.return_value = MagicMock()
+        
+        # Mock per il font: restituisce un oggetto che ha il metodo .render()
+        mock_font_instance = MagicMock()
+        mock_font_instance.render.return_value = mock_surface
+        mock_font.return_value = mock_font_instance
         
         yield
 
@@ -199,3 +199,37 @@ def test_bird_rotation_executes():
     bird.gravity = 10
     bird._rotate()
     assert bird.rect is not None
+
+def test_score_increment_and_reset():
+    """Tests the new Score class from score.py"""
+    s = score.Score("font1", "font2", 100, 100)
+    assert s.value == 0
+    s.scored()
+    assert s.value == 1
+    s.reset_value()
+    assert s.value == 0
+
+def test_pipe_top_vs_bottom_logic():
+    """Ensures that top and bottom pipes are initialized with different images/rects"""
+    pipe_top = pipe.Pipe(300, 200, 1, 100) # position 1 = TOP
+    pipe_bottom = pipe.Pipe(300, 200, 0, 100) # position 0 = BOTTOM
+    
+    assert pipe_top.get_position() == 1
+    assert pipe_bottom.get_position() == 0
+
+    assert pipe_top.rect.bottom < pipe_bottom.rect.top
+
+def test_game_reset_logic():
+    """Tests the reset_game function from main.py"""
+    from main import reset_game
+    bird = player.Bird(100, 200)
+    bird.died = True
+    bird.gravity = 10
+    pipe_group = pygame.sprite.Group()
+    pipe_group.add(pipe.Pipe(300, 200, 0, 100))
+    
+    reset_game(bird, pipe_group)
+    
+    assert bird.died is False
+    assert bird.gravity == 0
+    assert len(pipe_group) == 0
