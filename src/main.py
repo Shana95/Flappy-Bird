@@ -9,8 +9,25 @@ import sys
 import pygame
 
 import player
+import score
 from background import Ground, Sky
 from pipe import Pipe
+
+
+def reset_game(bird, pipe_group):  # score_manager):
+    """Riporta il gioco allo stato iniziale."""
+    # Reset the bird's position and state
+    bird.rect.midbottom = (90, 220)
+    bird.gravity = 0
+    bird.died = False
+    bird.is_rotated_to_death = False
+    # Reset the bird's image to the original (non-rotated) state
+    bird.image = bird.original_image
+
+    pipe_group.empty()
+
+    # Reset the score manager if implemented
+    # score_manager.reset()
 
 
 def main() -> None:
@@ -57,11 +74,16 @@ def main() -> None:
     # Set a timer to trigger the SPAWNPIPE event
     pygame.time.set_timer(spawn_pipe_event, 2750)
 
+    actual_score = score.Score(
+        "flappyborder.ttf", "flappyfill.ttf", int(sky.get_width() / 2), 50
+    )
+
     game_loop = True
 
     while game_loop:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                game_loop = False
                 pygame.quit()
                 sys.exit()
 
@@ -84,6 +106,10 @@ def main() -> None:
                     bird.enable_fly()
                     bird.jump()
 
+            # reset the game when r is pressed
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_r and bird.died:
+                reset_game(bird, pipe_group)
+
         bird_state = bird.get_state()
         if pygame.sprite.spritecollide(
             bird, pipe_group, False, pygame.sprite.collide_mask
@@ -98,6 +124,11 @@ def main() -> None:
         bird_group.draw(canvas)
         bird.update(ground.get_pos_y())
 
+        for pipe in pipe_group:
+            if pipe.get_position() != 1 and pipe.check_passed(bird.rect.centerx):
+                actual_score.scored()
+
+        actual_score.draw(canvas)
         # Scale the canvas to fit the window
         scaled_canvas = pygame.transform.smoothscale(
             canvas, (window_width, window_height)
