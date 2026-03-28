@@ -57,3 +57,16 @@ START_TRANSPARENCY_INIT = 255
 START_TRANSPARENCY_TARGET = 0
 GAMEOVER_TRANSPARENCY_INIT = 0
 GAMEOVER_TRANSPARENCY_TARGET = 255
+
+# =========================================
+# AUDIO SETTINGS
+# =========================================
+# Files' names
+SFX_DIE = "die.wav"
+SFX_HIT = "hit.wav"
+SFX_POINT = "point.wav"
+SFX_SWOOSH = "swoosh.wav"
+SFX_WING = "wing.wav"
+
+# Volumes (0.0 to 1.0)
+VOLUME_SFX = 1.0
