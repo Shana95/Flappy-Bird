@@ -26,7 +26,7 @@ Open your terminal and run the following command to download the project:
 2. **Navigate to the project directory:**
 
     ```sh
-    cd Flappy-Bird
+    cd Flappy-Bird/src
     ```
 
 3. **Install dependencies:**
