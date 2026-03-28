@@ -9,12 +9,15 @@ import states
 
 class Bird(pygame.sprite.Sprite):
     """
-    Class representing the player-controlled bird.
+    Represents the player-controlled bird, handling physics, animations,
+    and state transitions.
     Inherits from pygame.sprite.Sprite to utilize Group management.
     """
 
     def __init__(self, pos_x: int, pos_y: int) -> None:
-        """Initialize the bird with animations"""
+        """
+        Initialize the bird with its position, animations, and physical properties.
+        """
         super().__init__()
 
         self.images = []
@@ -33,18 +36,7 @@ class Bird(pygame.sprite.Sprite):
         self.gravity = 0.0
         self.fly = False
         self.died = False
-        self.is_rotated_to_death = False
         self.mask = pygame.mask.from_surface(self.image)
-
-    def get_state(self) -> states.States:
-        """Returns the current states.States member based on bird physics."""
-        if not self.fly and not self.died:
-            return states.States.READY
-        if not self.fly and self.died:
-            return states.States.GROUNDED
-        if self.fly and not self.died:
-            return states.States.FLYING
-        return states.States.FALLING
 
     def enable_fly(self) -> None:
         """Enable gravity and physics for the bird."""
@@ -55,9 +47,27 @@ class Bird(pygame.sprite.Sprite):
         self.fly = False
 
     def die(self):
-        """Trigger the bird's death state."""
+        """
+        Transition the bird to the dead state, disabling flight
+        and stopping animations.
+        """
         self.fly = False
         self.died = True
+
+    def get_state(self) -> states.States:
+        """
+        Determine the bird's current operational state based on physical flags.
+
+        Returns:
+            states.States: The member of the States enum (READY, GROUNDED, FLYING, FALLING).
+        """
+        if not self.fly and not self.died:
+            return states.States.READY
+        if not self.fly and self.died:
+            return states.States.GROUNDED
+        if self.fly and not self.died:
+            return states.States.FLYING
+        return states.States.FALLING
 
     def reset(self):
         """
@@ -69,22 +79,26 @@ class Bird(pygame.sprite.Sprite):
         self.rect.midbottom = (90, 220)
         self.gravity = 0.0
         self.died = False
-        self.is_rotated_to_death = False
         self.image = self.original_image
 
-    def hit_ground(self, ground_line: int):
-        """Check if the bird's vertical position exceeds the ground line."""
+    def current_bottom(self):
+        """
+        Calculate the y-coordinate of the bird's lowest visible pixel
+        to ensure accurate ground collision by ignoring transparent padding.
+        """
         visible_bottom = self.image.get_bounding_rect().bottom
         empty_space = self.image.get_height() - visible_bottom
+        return self.rect.bottom - empty_space
 
-        if self.rect.bottom - empty_space >= ground_line:
-            self.rect.bottom = ground_line + empty_space
-            # Upon hitting the ground, reset gravity.
-            self.gravity = 0
+    def hit_ground(self, ground_line: int):
+        """
+        Check if the bird's vertical position exceeds the ground line.
+        Stops the bird at the ground surface and disables flight logic.
+        """
+        offset = self.image.get_height() - self.image.get_bounding_rect().bottom
 
-            if not self.died:
-                self.die()
-
+        if self.current_bottom() >= ground_line:
+            self.rect.bottom = ground_line + offset
             self.disable_fly()
 
     def hit_ceiling(self):
@@ -103,19 +117,21 @@ class Bird(pygame.sprite.Sprite):
         self.rect.y += int(self.gravity)
 
     def _animate(self) -> None:
-        """Exclusively handles frame transitions for the wing-flapping animation."""
-        self.image_index = (self.image_index + 0.30) % len(self.images)
-        self.original_image = self.images[int(self.image_index)]
-        if not self.fly:
-            self.image = self.original_image
+        """
+        Exclusively handles frame transitions for the wing-flapping animation
+        (provided the flight flag is active).
+        """
+        if self.fly:
+            self.image_index = (self.image_index + 0.30) % len(self.images)
+            self.original_image = self.images[int(self.image_index)]
 
     def _rotate(self) -> None:
         """Exclusively handles the bird's rotation based on its vertical velocity."""
-        angle = self.gravity * -3
-        if angle <= -90:
+        if self.died:
             angle = -90
-        elif angle >= 25:
-            angle = 25
+        else:
+            angle = int(max(min(self.gravity * -8, 25), -90))
+
         self.image = pygame.transform.rotate(self.original_image, angle)
         self.rect = self.image.get_rect(center=self.rect.center)
 
@@ -126,8 +142,7 @@ class Bird(pygame.sprite.Sprite):
 
     def update(self, ground_line: int) -> None:
         """
-        Update bird logic every frame if the bird is still alive.
-        ground_line indicates the Current Y position of the ground.
+        Orchestrate the per-frame bird logic: animation, physics, and rotation.
         """
         if not self.died:
             self._animate()
@@ -137,18 +152,4 @@ class Bird(pygame.sprite.Sprite):
             self.hit_ceiling()
             self.hit_ground(ground_line)
 
-        if not self.died:
-            # Only rotate the bird if it's still alive
-            self._rotate()
-        elif self.rect.bottom < ground_line:
-            if not self.is_rotated_to_death:
-                current_center = self.rect.center
-                self.image = pygame.transform.rotate(self.original_image, -90)
-                self.rect = self.image.get_rect(center=current_center)
-                self.is_rotated_to_death = True
-        elif not self.is_rotated_to_death and self.gravity == 0:
-            self.is_rotated_to_death = True
-        # if self.gravity == 0 and self.died:
-        #     visible_bottom = self.image.get_bounding_rect().bottom
-        #     empty_space = self.image.get_height() - visible_bottom
-        #     self.rect.bottom = ground_line + empty_space
+        self._rotate()

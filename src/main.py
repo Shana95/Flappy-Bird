@@ -2,6 +2,7 @@
 # pylint: disable=too-many-statements
 # pylint: disable=too-many-locals
 # pylint: disable=line-too-long
+# pylint: disable=too-many-branches
 """Main execution script for the Flappy Bird game loop."""
 
 import random
@@ -20,7 +21,14 @@ from pipe import Pipe
 
 def main() -> None:
     """Initialize the game engine and manage the real-time event loop."""
+    pygame.mixer.pre_init(44100, -16, 2, 512)
     pygame.init()
+
+    sfx_wing = pygame.mixer.Sound(f"../assets/Sound Effects/{settings.SFX_WING}")
+    sfx_point = pygame.mixer.Sound(f"../assets/Sound Effects/{settings.SFX_POINT}")
+    sfx_hit = pygame.mixer.Sound(f"../assets/Sound Effects/{settings.SFX_HIT}")
+    sfx_die = pygame.mixer.Sound(f"../assets/Sound Effects/{settings.SFX_DIE}")
+    sfx_swoosh = pygame.mixer.Sound(f"../assets/Sound Effects/{settings.SFX_SWOOSH}")
 
     # Get the current monitor height
     screen_info = pygame.display.Info()
@@ -105,6 +113,7 @@ def main() -> None:
             if (event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE) or (
                 event.type == pygame.MOUSEBUTTONDOWN and event.button == 1
             ):
+                sfx_wing.play()
                 if not bird.died:
                     bird.enable_fly()
                     bird.jump()
@@ -115,7 +124,7 @@ def main() -> None:
                 or (event.type == pygame.MOUSEBUTTONDOWN and event.button == 3)
                 and bird.died
             ):
-
+                sfx_swoosh.play()
                 reset.reset_game(
                     bird, pipe_group, actual_score, start_screen, gameover_screen
                 )
@@ -124,7 +133,15 @@ def main() -> None:
         if pygame.sprite.spritecollide(
             bird, pipe_group, False, pygame.sprite.collide_mask
         ):
-            bird.die()
+            if not bird.died:
+                bird.die()
+                sfx_hit.play()
+                sfx_die.play()
+
+        if bird.current_bottom() >= ground.get_pos_y():
+            if not bird.died:
+                sfx_hit.play()
+                bird.die()
 
         # Draw the game elements on the canvas
         sky.draw()
@@ -139,6 +156,7 @@ def main() -> None:
         for pipe in pipe_group:
             if pipe.get_position() != 1 and pipe.check_passed(bird.rect.centerx):
                 actual_score.scored()
+                sfx_point.play()
 
         actual_score.draw(
             start_screen.target_transparency_reached(), canvas, bird_state
