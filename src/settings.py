@@ -7,7 +7,7 @@ ORIGINAL_WIDTH = 288
 ORIGINAL_HEIGHT = 512
 FPS = 60
 VELOCITY = 2
-SPAWN_PIPE_TIMER = 2750
+SPAWN_PIPE_TIMER = 2000
 
 # =========================================
 # ASSETS (IMAGES & FONTS)
@@ -36,8 +36,8 @@ BIRD_START_Y = 220
 # Pipes
 PIPE_MIN_Y = 150
 PIPE_MAX_Y = 350
-PIPE_GAP_MIN = 100
-PIPE_GAP_MAX = 130
+PIPE_GAP_MIN = 75
+PIPE_GAP_MAX = 100
 PIPE_SPAWN_OFFSET = 50
 
 # =========================================
@@ -46,8 +46,8 @@ PIPE_SPAWN_OFFSET = 50
 # Screens Positioning
 START_SCREEN_X = 150
 START_SCREEN_Y = 305
-GAMEOVER_SCREEN_X = 100
-GAMEOVER_SCREEN_Y = 305
+GAMEOVER_SCREEN_X = 150
+GAMEOVER_SCREEN_Y = 200
 
 # Score Positioning (X is calculated dynamically in main)
 SCORE_POS_Y = 50
