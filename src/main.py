@@ -64,15 +64,15 @@ def main() -> None:
 
     start_screen = ui.StartScreen(
         settings.FILE_START,
-        150,
-        305,
+        settings.START_SCREEN_X,
+        settings.START_SCREEN_Y,
         settings.START_TRANSPARENCY_INIT,
         settings.START_TRANSPARENCY_TARGET,
     )
     gameover_screen = ui.GameOverScreen(
         settings.FILE_GAMEOVER,
-        150,
-        305,
+        settings.GAMEOVER_SCREEN_X,
+        settings.GAMEOVER_SCREEN_Y,
         settings.GAMEOVER_TRANSPARENCY_INIT,
         settings.GAMEOVER_TRANSPARENCY_TARGET,
     )
