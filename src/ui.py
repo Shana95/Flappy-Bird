@@ -33,6 +33,7 @@ class UI:
     def reset(self) -> None:
         """Reset the UI transparency to its original value."""
         self.transparency = self.original_transparency
+        self.image.set_alpha(self.transparency)
 
     def target_transparency_reached(
         self,
