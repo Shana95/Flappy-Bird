@@ -10,26 +10,11 @@ import sys
 import pygame
 
 import player
+import reset
 import score
 import ui
 from background import Ground, Sky
 from pipe import Pipe
-
-
-def reset_game(bird, pipe_group):  # score_manager):
-    """Riporta il gioco allo stato iniziale."""
-    # Reset the bird's position and state
-    bird.rect.midbottom = (90, 220)
-    bird.gravity = 0
-    bird.died = False
-    bird.is_rotated_to_death = False
-    # Reset the bird's image to the original (non-rotated) state
-    bird.image = bird.original_image
-
-    pipe_group.empty()
-
-    # Reset the score manager if implemented
-    # score_manager.reset()
 
 
 def main() -> None:
@@ -123,9 +108,16 @@ def main() -> None:
                     bird.enable_fly()
                     bird.jump()
 
-            # reset the game when r is pressed
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_r and bird.died:
-                reset_game(bird, pipe_group)
+            # reset the game when r or MOUSERIGHT is pressed
+            if (
+                (event.type == pygame.KEYDOWN and event.key == pygame.K_r)
+                or (event.type == pygame.MOUSEBUTTONDOWN and event.button == 3)
+                and bird.died
+            ):
+
+                reset.reset_game(
+                    bird, pipe_group, actual_score, start_screen, gameover_screen
+                )
 
         bird_state = bird.get_state()
         if pygame.sprite.spritecollide(
