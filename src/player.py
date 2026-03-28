@@ -59,6 +59,19 @@ class Bird(pygame.sprite.Sprite):
         self.fly = False
         self.died = True
 
+    def reset(self):
+        """
+        Reset the bird to its initial state for a new game.
+
+        This resets the vertical position, gravity, death flags,
+        and restores the original unrotated image.
+        """
+        self.rect.midbottom = (90, 220)
+        self.gravity = 0.0
+        self.died = False
+        self.is_rotated_to_death = False
+        self.image = self.original_image
+
     def hit_ground(self, ground_line: int):
         """Check if the bird's vertical position exceeds the ground line."""
         visible_bottom = self.image.get_bounding_rect().bottom
