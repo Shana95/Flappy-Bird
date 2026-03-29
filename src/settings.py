@@ -26,7 +26,7 @@ FONT_FILL = "flappyfill.ttf"
 SKY_POS_X = 0
 SKY_POS_Y = 0
 GROUND_POS_X = 0
-GROUND_POS_Y = 560
+GROUND_POS_Y = 540
 GROUND_OFFSET = 560
 
 # Bird
