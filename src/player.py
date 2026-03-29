@@ -4,7 +4,6 @@
 
 import pygame
 
-import settings
 import states
 
 
@@ -15,13 +14,13 @@ class Bird(pygame.sprite.Sprite):
     Inherits from pygame.sprite.Sprite to utilize Group management.
     """
 
-    def __init__(self, pos_x: int, pos_y: int, *groups) -> None:
+    def __init__(self, pos_x: int, pos_y: int) -> None:
         """
         Initialize the bird with its position, animations, and physical properties.
         """
-        super().__init__(*groups)
+        super().__init__()
 
-        self.images: list[pygame.Surface] = []
+        self.images = []
         for i in range(0, 3):
             image = pygame.image.load(
                 f"../assets/Game Objects/yellowbird-{i}.png"
@@ -32,27 +31,12 @@ class Bird(pygame.sprite.Sprite):
 
         self.original_image = self.images[int(self.image_index)]
         self.image = self.original_image
-
-        assert isinstance(self.image, pygame.Surface)
-
         self.rect = self.image.get_rect(midbottom=(pos_x, pos_y))
 
         self.gravity = 0.0
         self.fly = False
         self.died = False
         self.mask = pygame.mask.from_surface(self.image)
-
-    def is_flying(self) -> bool:
-        """Check if the bird is currently flying."""
-        return self.fly
-
-    def is_dead(self) -> bool:
-        """Check if the bird is currently dead."""
-        return self.died
-
-    def get_centerx(self) -> int:
-        """Return the horizontal center of the bird."""
-        return self.rect.centerx
 
     def enable_fly(self) -> None:
         """Enable gravity and physics for the bird."""
@@ -62,7 +46,7 @@ class Bird(pygame.sprite.Sprite):
         """Disable gravity and physics for the bird."""
         self.fly = False
 
-    def die(self) -> None:
+    def die(self):
         """
         Transition the bird to the dead state, disabling flight
         and stopping animations.
@@ -85,20 +69,19 @@ class Bird(pygame.sprite.Sprite):
             return states.States.FLYING
         return states.States.FALLING
 
-    def reset(self) -> None:
+    def reset(self):
         """
         Reset the bird to its initial state for a new game.
 
         This resets the vertical position, gravity, death flags,
         and restores the original unrotated image.
         """
-        self.rect.midbottom = (settings.BIRD_START_X, settings.BIRD_START_Y)
+        self.rect.midbottom = (90, 220)
         self.gravity = 0.0
         self.died = False
-        self.fly = False
         self.image = self.original_image
 
-    def current_bottom(self) -> int:
+    def current_bottom(self):
         """
         Calculate the y-coordinate of the bird's lowest visible pixel
         to ensure accurate ground collision by ignoring transparent padding.
@@ -107,7 +90,7 @@ class Bird(pygame.sprite.Sprite):
         empty_space = self.image.get_height() - visible_bottom
         return self.rect.bottom - empty_space
 
-    def hit_ground(self, ground_line: int) -> None:
+    def hit_ground(self, ground_line: int):
         """
         Check if the bird's vertical position exceeds the ground line.
         Stops the bird at the ground surface and disables flight logic.
@@ -118,7 +101,7 @@ class Bird(pygame.sprite.Sprite):
             self.rect.bottom = ground_line + offset
             self.disable_fly()
 
-    def hit_ceiling(self) -> None:
+    def hit_ceiling(self):
         """Prevent the bird from flying above the sky (screen top)."""
         if self.rect.top <= 0:
             self.rect.top = 0
@@ -128,10 +111,19 @@ class Bird(pygame.sprite.Sprite):
         """Apply an upward impulse to the bird's gravity."""
         self.gravity = -7
 
+    def apply_gravity(self) -> None:
+        """Update gravity value and apply it to the bird's vertical position."""
+        self.gravity += 0.5
+        self.rect.y += int(self.gravity)
+
     def _animate(self) -> None:
-        """Exclusively handles frame transitions for the wing-flapping animation"""
-        self.image_index = (self.image_index + 0.30) % len(self.images)
-        self.original_image = self.images[int(self.image_index)]
+        """
+        Exclusively handles frame transitions for the wing-flapping animation
+        (provided the flight flag is active).
+        """
+        if self.fly:
+            self.image_index = (self.image_index + 0.30) % len(self.images)
+            self.original_image = self.images[int(self.image_index)]
 
     def _rotate(self) -> None:
         """Exclusively handles the bird's rotation based on its vertical velocity."""

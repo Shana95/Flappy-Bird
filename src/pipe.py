@@ -1,6 +1,7 @@
+"""Module for managing pipe obstacles in the game"""
+
 # pylint: disable=no-member
 # pylint: disable=too-many-locals
-"""Module for managing pipe obstacles in the game"""
 
 import pygame
 
@@ -10,13 +11,14 @@ import states
 class Pipe(pygame.sprite.Sprite):
     """Handles the obstacles (pipes) and their interaction with the game world."""
 
-    pipe_bottom_surface: pygame.Surface | None = None
-    pipe_top_surface: pygame.Surface | None = None
+    # Class variables for lazy loading of pipe images to optimize performance.
+    pipe_bottom_surface = None
+    pipe_top_surface = None
 
-    def __init__(self, x: int, y: int, position: int, gap: int, *groups):
-        """Initialize Pipe with image, position"""
-        super().__init__(*groups)
+    def __init__(self, x: int, y: int, position: int, gap: int):
+        super().__init__()
 
+        # Load pipe images only once and reuse them for all pipe instances.
         if Pipe.pipe_bottom_surface is None:
             Pipe.pipe_bottom_surface = pygame.image.load(
                 "../assets/Game Objects/pipe-green.png"
@@ -27,10 +29,7 @@ class Pipe(pygame.sprite.Sprite):
 
         self.passed = False
         self.position = position
-
-        assert Pipe.pipe_top_surface is not None
-        assert Pipe.pipe_bottom_surface is not None
-
+        # chooses between a top or a bottom pipe
         if self.position == 1:
             self.image = Pipe.pipe_top_surface
             self.rect = self.image.get_rect(midbottom=(x, y - (gap // 2)))
@@ -40,7 +39,7 @@ class Pipe(pygame.sprite.Sprite):
 
         self.mask = pygame.mask.from_surface(self.image)
 
-    def get_position(self) -> int:
+    def get_position(self):
         """Return the pipe's position attribute"""
         return self.position
 
@@ -55,7 +54,7 @@ class Pipe(pygame.sprite.Sprite):
             return True
         return False
 
-    def update(self, velocity: int, bird_state: states.States) -> None:
+    def update(self, velocity: int, bird_state) -> None:
         """Update the pipe's position and handle its lifecycle."""
         if bird_state == states.States.FLYING:
             self.rect.x -= velocity
