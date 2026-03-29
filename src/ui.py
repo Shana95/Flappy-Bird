@@ -43,9 +43,11 @@ class UI:
 
     def _animation(self):
         """Abstract method to handle animation logic"""
+        raise NotImplementedError("Subclasses must implement _animation()")
 
-    def display(self):
+    def draw(self, bird_state: states.States, screen: pygame.Surface):
         """Abstract method to display the UI element on the screen."""
+        raise NotImplementedError("Subclasses must implement draw()")
 
 
 class StartScreen(UI):
