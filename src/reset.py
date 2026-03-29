@@ -13,7 +13,7 @@ def reset_game(
     score: Score,
     start_screen: StartScreen,
     gameover_screen: GameOverScreen,
-):
+) -> None:
     """
     Reset all game entities to their initial states for a new match.
 

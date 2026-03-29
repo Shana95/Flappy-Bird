@@ -17,11 +17,11 @@ class Score:
         self.pos_x = pos_x
         self.pos_y = pos_y
 
-    def reset(self):
+    def reset(self) -> None:
         """Reset the current score value to zero."""
         self.value = 0
 
-    def scored(self):
+    def scored(self) -> None:
         """Increment the score value by one."""
         self.value += 1
 
@@ -30,7 +30,7 @@ class Score:
         timing: bool,
         screen: pygame.Surface,
         bird_state: states.States,
-    ):
+    ) -> None:
         """Render the score layers onto the provided screen surface."""
         if bird_state == states.States.FLYING and timing:
             surf_border = self.font_border.render(

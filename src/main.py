@@ -21,6 +21,10 @@ from pipe import Pipe
 
 def main() -> None:
     """Initialize the game engine and manage the real-time event loop."""
+
+    # ==========================================
+    # 1. INITIALIZATION & ASSETS
+    # ==========================================
     pygame.mixer.pre_init(44100, -16, 2, 512)
     pygame.init()
 
@@ -30,25 +34,25 @@ def main() -> None:
     sfx_die = pygame.mixer.Sound(f"../assets/Sound Effects/{settings.SFX_DIE}")
     sfx_swoosh = pygame.mixer.Sound(f"../assets/Sound Effects/{settings.SFX_SWOOSH}")
 
-    # Get the current monitor height
+    # ==========================================
+    # 2. DISPLAY & CANVAS CONFIGURATION
+    # ==========================================
     screen_info = pygame.display.Info()
-    monitor_height = screen_info.current_h
-    # Optional offset to adjust the window width if needed
-    offset = 0
 
-    # Set the window height to 90% of the monitor height
+    monitor_height = screen_info.current_h
     window_height = int(monitor_height * 0.90)
-    # Scale the screen dimensions
     scale = window_height / settings.ORIGINAL_HEIGHT
-    window_width = int(settings.ORIGINAL_WIDTH * scale + offset)
+    window_width = int(settings.ORIGINAL_WIDTH * scale)
 
     window = pygame.display.set_mode((window_width, window_height))
     pygame.display.set_caption("Flappy Bird")
-    # Create a canvas surface to draw the game elements, which will be scaled to fit the window
+
     canvas = pygame.Surface((settings.ORIGINAL_WIDTH, settings.ORIGINAL_HEIGHT))
     clock = pygame.time.Clock()
 
-    # the more the offset the more the ground goes down
+    # ==========================================
+    # 3. GAME OBJECTS INSTANTIATION
+    # ==========================================
     sky = Sky(settings.FILE_SKY, settings.SKY_POS_X, settings.SKY_POS_Y, canvas)
     ground = Ground(
         settings.FILE_GROUND, settings.GROUND_POS_X, settings.GROUND_POS_Y, canvas
@@ -60,7 +64,6 @@ def main() -> None:
 
     pipe_group: pygame.sprite.Group = pygame.sprite.Group()
     spawn_pipe_event = pygame.USEREVENT
-    # Set a timer to trigger the SPAWNPIPE event
     pygame.time.set_timer(spawn_pipe_event, settings.SPAWN_PIPE_TIMER)
 
     actual_score = score.Score(
@@ -77,6 +80,7 @@ def main() -> None:
         settings.START_TRANSPARENCY_INIT,
         settings.START_TRANSPARENCY_TARGET,
     )
+
     gameover_screen = ui.GameOverScreen(
         settings.FILE_GAMEOVER,
         settings.GAMEOVER_SCREEN_X,
@@ -85,24 +89,40 @@ def main() -> None:
         settings.GAMEOVER_TRANSPARENCY_TARGET,
     )
 
+    # ==========================================
+    # 4. MAIN GAME LOOP
+    # ==========================================
     game_loop = True
-
     while game_loop:
+
+        # --- A. Event Handling ---
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 game_loop = False
                 pygame.quit()
                 sys.exit()
 
-            if event.type == spawn_pipe_event and bird.fly and not bird.died:
-                # Generate random vertical position and gap size for the new pipes
+            # Game Reset Input
+            if bird.is_dead() and (
+                (event.type == pygame.KEYDOWN and event.key == pygame.K_r)
+                or (event.type == pygame.MOUSEBUTTONDOWN and event.button == 3)
+            ):
+                sfx_swoosh.play()
+                reset.reset_game(
+                    bird, pipe_group, actual_score, start_screen, gameover_screen
+                )
+
+            # Pipe Spawning
+            if (
+                event.type == spawn_pipe_event
+                and bird.is_flying()
+                and not bird.is_dead()
+            ):
                 random_y = random.randint(settings.PIPE_MIN_Y, settings.PIPE_MAX_Y)
-                # randomize the gap
                 random_gap = random.randint(
                     settings.PIPE_GAP_MIN, settings.PIPE_GAP_MAX
                 )
 
-                # Create the pipes
                 bottom_pipe = Pipe(
                     settings.ORIGINAL_WIDTH + 50, random_y, 0, random_gap
                 )
@@ -110,40 +130,37 @@ def main() -> None:
 
                 pipe_group.add(bottom_pipe, top_pipe)
 
+            # Bird Jump Input
             if (event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE) or (
                 event.type == pygame.MOUSEBUTTONDOWN and event.button == 1
             ):
-                sfx_wing.play()
-                if not bird.died:
+                if not bird.is_dead():
+                    sfx_wing.play()
                     bird.enable_fly()
                     bird.jump()
 
-            # reset the game when r or MOUSERIGHT is pressed
-            if (
-                (event.type == pygame.KEYDOWN and event.key == pygame.K_r)
-                or (event.type == pygame.MOUSEBUTTONDOWN and event.button == 3)
-                and bird.died
-            ):
-                sfx_swoosh.play()
-                reset.reset_game(
-                    bird, pipe_group, actual_score, start_screen, gameover_screen
-                )
-
+        # --- B. Game Logic & Collisions ---
         bird_state = bird.get_state()
         if pygame.sprite.spritecollide(
-            bird, pipe_group, False, pygame.sprite.collide_mask
+            bird, pipe_group, False, pygame.sprite.collide_mask  # type: ignore
         ):
-            if not bird.died:
+            if not bird.is_dead():
                 bird.die()
                 sfx_hit.play()
                 sfx_die.play()
 
         if bird.current_bottom() >= ground.get_pos_y():
-            if not bird.died:
+            if not bird.is_dead():
                 sfx_hit.play()
                 bird.die()
 
-        # Draw the game elements on the canvas
+        # Score Logic
+        for pipe in pipe_group:
+            if pipe.get_position() != 1 and pipe.check_passed(bird.get_centerx()):
+                actual_score.scored()
+                sfx_point.play()
+
+        # --- C. Rendering & Updates ---
         sky.draw()
         pipe_group.draw(canvas)
         pipe_group.update(settings.VELOCITY, bird_state)
@@ -153,15 +170,11 @@ def main() -> None:
         bird.update(ground.get_pos_y())
         gameover_screen.draw(bird_state, canvas)
 
-        for pipe in pipe_group:
-            if pipe.get_position() != 1 and pipe.check_passed(bird.rect.centerx):
-                actual_score.scored()
-                sfx_point.play()
-
         actual_score.draw(
             start_screen.target_transparency_reached(), canvas, bird_state
         )
-        # Scale the canvas to fit the window
+
+        # --- D. Display Scaling & Tick ---
         scaled_canvas = pygame.transform.smoothscale(
             canvas, (window_width, window_height)
         )

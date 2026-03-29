@@ -1,7 +1,6 @@
-"""Module for managing pipe obstacles in the game"""
-
 # pylint: disable=no-member
 # pylint: disable=too-many-locals
+"""Module for managing pipe obstacles in the game"""
 
 import pygame
 
@@ -11,14 +10,12 @@ import states
 class Pipe(pygame.sprite.Sprite):
     """Handles the obstacles (pipes) and their interaction with the game world."""
 
-    # Class variables for lazy loading of pipe images to optimize performance.
-    pipe_bottom_surface = None
-    pipe_top_surface = None
+    pipe_bottom_surface: pygame.Surface | None = None
+    pipe_top_surface: pygame.Surface | None = None
 
-    def __init__(self, x: int, y: int, position: int, gap: int):
-        super().__init__()
+    def __init__(self, x: int, y: int, position: int, gap: int, *groups):
+        super().__init__(*groups)
 
-        # Load pipe images only once and reuse them for all pipe instances.
         if Pipe.pipe_bottom_surface is None:
             Pipe.pipe_bottom_surface = pygame.image.load(
                 "../assets/Game Objects/pipe-green.png"
@@ -29,7 +26,10 @@ class Pipe(pygame.sprite.Sprite):
 
         self.passed = False
         self.position = position
-        # chooses between a top or a bottom pipe
+
+        assert Pipe.pipe_top_surface is not None
+        assert Pipe.pipe_bottom_surface is not None
+
         if self.position == 1:
             self.image = Pipe.pipe_top_surface
             self.rect = self.image.get_rect(midbottom=(x, y - (gap // 2)))

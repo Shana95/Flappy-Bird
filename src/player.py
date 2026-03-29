@@ -4,6 +4,7 @@
 
 import pygame
 
+import settings
 import states
 
 
@@ -15,12 +16,9 @@ class Bird(pygame.sprite.Sprite):
     """
 
     def __init__(self, pos_x: int, pos_y: int) -> None:
-        """
-        Initialize the bird with its position, animations, and physical properties.
-        """
         super().__init__()
 
-        self.images = []
+        self.images: list[pygame.Surface] = []
         for i in range(0, 3):
             image = pygame.image.load(
                 f"../assets/Game Objects/yellowbird-{i}.png"
@@ -31,12 +29,27 @@ class Bird(pygame.sprite.Sprite):
 
         self.original_image = self.images[int(self.image_index)]
         self.image = self.original_image
+
+        assert isinstance(self.image, pygame.Surface)
+
         self.rect = self.image.get_rect(midbottom=(pos_x, pos_y))
 
         self.gravity = 0.0
         self.fly = False
         self.died = False
         self.mask = pygame.mask.from_surface(self.image)
+
+    def is_flying(self) -> bool:
+        """Check if the bird is currently flying."""
+        return self.fly
+
+    def is_dead(self) -> bool:
+        """Check if the bird is currently dead."""
+        return self.died
+
+    def get_centerx(self) -> int:
+        """Return the horizontal center of the bird."""
+        return self.rect.centerx
 
     def enable_fly(self) -> None:
         """Enable gravity and physics for the bird."""
@@ -76,9 +89,10 @@ class Bird(pygame.sprite.Sprite):
         This resets the vertical position, gravity, death flags,
         and restores the original unrotated image.
         """
-        self.rect.midbottom = (90, 220)
+        self.rect.midbottom = (settings.BIRD_START_X, settings.BIRD_START_Y)
         self.gravity = 0.0
         self.died = False
+        self.fly = False
         self.image = self.original_image
 
     def current_bottom(self):
@@ -111,19 +125,10 @@ class Bird(pygame.sprite.Sprite):
         """Apply an upward impulse to the bird's gravity."""
         self.gravity = -7
 
-    def apply_gravity(self) -> None:
-        """Update gravity value and apply it to the bird's vertical position."""
-        self.gravity += 0.5
-        self.rect.y += int(self.gravity)
-
     def _animate(self) -> None:
-        """
-        Exclusively handles frame transitions for the wing-flapping animation
-        (provided the flight flag is active).
-        """
-        if self.fly:
-            self.image_index = (self.image_index + 0.30) % len(self.images)
-            self.original_image = self.images[int(self.image_index)]
+        """Exclusively handles frame transitions for the wing-flapping animation"""
+        self.image_index = (self.image_index + 0.30) % len(self.images)
+        self.original_image = self.images[int(self.image_index)]
 
     def _rotate(self) -> None:
         """Exclusively handles the bird's rotation based on its vertical velocity."""

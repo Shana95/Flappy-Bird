@@ -1,7 +1,6 @@
+# pylint: disable=too-many-locals
 """Module containing classes to manage
 game background elements like Sky and Ground."""
-
-# pylint: disable=too-many-locals
 
 import pygame
 
@@ -39,15 +38,12 @@ class Background:
         return self.pos_y
 
     def draw(self) -> None:
-        """Abstract method to draw the object on the screen."""
+        """Method to draw the object on the screen."""
+        self.screen.blit(self.surface, (self.pos_x, self.pos_y))
 
 
 class Sky(Background):
     """Class representing the sky background layer."""
-
-    def draw(self):
-        """Blit the sky surface onto the screen."""
-        self.screen.blit(self.surface, (self.pos_x, self.pos_y))
 
 
 class Ground(Background):
@@ -59,10 +55,6 @@ class Ground(Background):
         """Initialize the ground and calculate its vertical position."""
         super().__init__(filename, pos_x, 0, screen)
         self.pos_y = sky_height - self.get_height()
-
-    def draw(self) -> None:
-        """Blit the ground surface onto the screen."""
-        self.screen.blit(self.surface, (self.pos_x, self.pos_y))
 
     def move(self, velocity: int) -> None:
         """Update the X position to create a scrolling effect."""
@@ -78,5 +70,5 @@ class Ground(Background):
         preventing background movement after a collision.
         """
         self.draw()
-        if bird_state == states.States.FLYING:
+        if bird_state in (states.States.FLYING, states.States.READY):
             self.move(velocity)
